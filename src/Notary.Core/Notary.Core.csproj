@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- RFC 3161 / CMS types (Rfc3161TimestampToken, SignedCms). Out-of-band even on .NET 8:
+         present in the shared runtime but not the ref pack, so we reference the package to compile. -->
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="8.0.0" />
+    <!-- Milestone 5: Azure Key Vault. The private key never leaves the vault; CryptographyClient
+         signs the digest remotely. ISigningProvider is the only thing that changes. -->
+    <PackageReference Include="Azure.Security.KeyVault.Keys" Version="4.6.0" />
+    <PackageReference Include="Azure.Security.KeyVault.Certificates" Version="4.6.0" />
+    <PackageReference Include="Azure.Identity" Version="1.12.0" />
+  </ItemGroup>
+</Project>

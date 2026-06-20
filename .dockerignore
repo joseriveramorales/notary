@@ -1,0 +1,9 @@
+**/bin
+**/obj
+**/.vs
+**/*.user
+*.pfx
+*.sig
+*.cert
+*.tsr
+contract.txt

@@ -1,0 +1,14 @@
+bin/
+obj/
+*.user
+artifacts/
+# NEVER commit signing keys
+*.pfx
+*.key
+notary-key.*
+# Detached sidecars are generated next to documents — don't track demo ones
+*.sig
+*.cert
+*.tsr
+# Generated demo document
+contract.txt
