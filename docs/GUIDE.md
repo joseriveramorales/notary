@@ -11,7 +11,11 @@
 4. [Debugging guide](#4-debugging-guide)
 5. [Using the service (start to finish)](#5-using-the-service-start-to-finish)
 6. [Check your understanding](#6-check-your-understanding)
-7. [Glossary](#7-glossary)
+7. [Practice — hands-on exercises](#7-practice--hands-on-exercises)
+8. [Glossary](#8-glossary)
+
+> 🎥 **Want the maths + videos?** [MATH.md](MATH.md) has a curated YouTube watch-list (Computerphile,
+> 3Blue1Brown, Christof Paar's full course) and pen-and-paper exercises (toy ECDSA, the nonce-reuse break).
 
 ---
 
@@ -344,7 +348,39 @@ Try to answer before expanding. Levels: 🟢 recall · 🟡 apply · 🔴 design
 
 ---
 
-## 7. Glossary
+## 7. Practice — hands-on exercises
+
+Each has a **goal**, a **do**, and a **checkpoint** you can verify yourself. 🟢 warm-up · 🟡 build · 🔴 stretch.
+
+**P1 🟢 — Notarize, tamper, restore.**
+*Do:* `notarize ./contract.txt --timestamp`, then `verify` (Trusted), flip one byte, `verify` (Tampered), flip it back, `verify`.
+*Checkpoint:* you can state which of the `.sig`/`.cert`/`.tsr` changed (none — they're detached) and why the verdict flipped.
+
+**P2 🟢 — Look inside the sidecars.**
+*Do:* `(Get-Item contract.txt.sig).Length`; `certutil -dump contract.txt.cert`; `certutil -asn contract.txt.tsr`.
+*Checkpoint:* the `.sig` is **64 bytes** (P-256 $r\,\|\,s$); you can find `CN=…` in the cert and the `genTime` in the `.tsr`.
+
+**P3 🟡 — Reproduce & fix the `/verify` 500.**
+*Do:* follow §4.4 — post a valid-base64-but-bogus certificate, see the 500, then guard the cert load in `VerifyBytes` and return `Unverifiable`.
+*Checkpoint:* the same request now returns a clean **422**; add a test that asserts it.
+
+**P4 🟡 — Swap the hash to SHA-384 and watch what breaks.**
+*Do:* change `Hashing` to SHA-384 (48-byte digest) but leave the key on P-256/ES256.
+*Checkpoint:* signing/verifying now mismatches — explain *why* (ES256 expects a 32-byte digest; a 48-byte hash needs P-384/ES384). This is the **hash-size ↔ curve-size** lesson, felt directly.
+
+**P5 🔴 — Make the signer thread-safe (review finding #2).**
+*Do:* write a test that fires many `SignBytes` calls concurrently against one shared provider; observe flakiness; add a `lock` (or register the provider per-scope); re-run.
+*Checkpoint:* the concurrent test is green and you can explain why a singleton `ECDsa` needed protection.
+
+**P6 🔴 — Use a real TSA.**
+*Do:* point `HttpTimestampAuthority` at a public RFC 3161 TSA (e.g. `http://timestamp.digicert.com`) via `--tsa`, notarize, then `verify`.
+*Checkpoint:* the `.tsr` verifies and `certutil -asn` shows a real authority's `genTime`; contrast it with the in-process `LocalTimestampAuthority`.
+
+**Stretch 🔴 — Batch notarization with a Merkle tree.** Hash many files into a Merkle tree, sign only the
+**root**, and store each file's inclusion proof. One signature notarizes thousands of files — and you've
+just rebuilt the core idea behind Certificate Transparency and blockchains.
+
+## 8. Glossary
 | Term | Meaning |
 |------|---------|
 | **SHA-256** | Hash function producing a 32-byte digest (the file's fingerprint). |

@@ -215,3 +215,74 @@ hash-then-sign trust you already understand, with a second signer whose only cla
 > flipping one byte of a notarized file makes both the signature and the timestamp fail — and *what
 > hard problem* an attacker would have to solve to forge either. (Answer key: §1 birthday bound + §3
 > ECDLP.)
+
+---
+
+## 7. Watch & learn (free video)
+
+Titles are stable; search the channel + topic if a link moves.
+
+| Watch | Where | For §|
+|-------|-------|------|
+| **"Introduction to Cryptography" — full lecture course** (Christof Paar, Ruhr-Uni Bochum) | YouTube — *the* best free university crypto course | all |
+| **"But how does Bitcoin work?"** (3Blue1Brown) | YouTube — gorgeous visual on SHA-256 + digital signatures | §1–2 |
+| **"SHA: Secure Hashing Algorithm"**, **"Hashing Algorithms and Security"** (Computerphile) | YouTube | §1 |
+| **"Public Key Cryptography"**, **"Digital Signatures"** (Computerphile) | YouTube | §2 |
+| **"Elliptic Curves"** (Computerphile) and **"Elliptic Curves"** (Numberphile, with Edward Frenkel) | YouTube — group-law intuition | §3 |
+| **"Elliptic Curve Back Door"** (Computerphile) | YouTube — the Dual_EC_DRBG story; why *trust in the maths* matters | §3 |
+| **"Journey into Cryptography"** (Khan Academy) | free course — modular arithmetic → RSA | §2 background |
+| **"Cryptography I"** (Dan Boneh, Stanford) | Coursera (free audit), lectures mirrored on YouTube — the provable-security mindset | §2 |
+
+> Suggested order: 3Blue1Brown Bitcoin video → Computerphile hashing & signatures → Christof Paar
+> lectures on number theory and ECC → Numberphile/Computerphile elliptic curves. Then re-read §3 here.
+
+## 8. Exercises (fundamentals)
+
+🟢 recall · 🟡 apply · 🔴 stretch. Worked answers are hidden — try first.
+
+**E1 🟢 — Birthday bound.** Using $k \approx 1.177\sqrt{2^{\,n}}$ for a ~50% collision chance, how many
+SHA-256 digests must you generate before a collision is likely? Why does this make 256-bit hashes give
+"128-bit" collision strength?
+
+**E2 🟢 — Trace the tamper.** In one paragraph, follow a single flipped bit from the file through
+`Hashing.Sha256` and `pub.VerifyHash` and explain precisely which equality fails and why.
+
+**E3 🟡 — Toy ECDSA by hand.** Curve $E: y^2 = x^3 + 2x + 2 \pmod{17}$, base point $G=(5,1)$ of prime
+order $n=19$, private key $d=7$.
+(a) Compute the public key $Q = dG$.
+(b) Sign hash $e=10$ with nonce $k=3$: compute $R=kG$, then $r = x_R \bmod n$ and $s = k^{-1}(e+rd) \bmod n$.
+(c) Verify your $(r,s)$: compute $u_1 = e s^{-1}$, $u_2 = r s^{-1}$, and check $x\text{-coord}(u_1G + u_2Q) \equiv r$.
+
+<details><summary>Answer E3</summary>
+
+(a) $Q = 7G = (0,6)$.
+(b) $R = 3G = (10,6)$, so $r = 10$; $s = 3^{-1}(10 + 10\cdot 7) \bmod 19 = 14$. Signature $(r,s)=(10,14)$.
+(c) $s^{-1}=15 \bmod 19$; $u_1 = 10\cdot 15,\ u_2 = 10\cdot 15 \bmod 19$; $u_1G+u_2Q = (10,6)$, whose
+$x = 10 \equiv r$. **Valid.** (Point arithmetic uses the chord–tangent law from §3.)
+</details>
+
+**E4 🔴 — Break it: nonce reuse.** Same setup as E3. You signed $e_1=10$ and later $e_2=14$ **with the
+same $k=3$**, giving $(r,s_1)=(10,14)$ and $(r,s_2)=(10,9)$. Acting as the attacker who sees only the two
+signatures and hashes: (a) recover $k$ from $s_1 - s_2 = k^{-1}(e_1-e_2)$; (b) recover the private key
+$d = r^{-1}(s_1 k - e_1) \bmod n$. This is the PlayStation 3 break in miniature.
+
+<details><summary>Answer E4</summary>
+
+(a) $k = (e_1-e_2)(s_1-s_2)^{-1} = (10-14)(14-9)^{-1} \bmod 19 = (-4)(5^{-1}) = (-4)(4) = -16 \equiv 3$.
+(b) $d = 10^{-1}(14\cdot 3 - 10) \bmod 19 = 2\cdot 32 \bmod 19 = 7$. **Private key recovered.**
+Fix: derive $k$ deterministically per RFC 6979 — no reusable randomness. *This is the single most
+important practical lesson in the whole document.*
+</details>
+
+**E5 🟡 — Key-size intuition.** P-256 has $n \approx 2^{256}$ and Pollard's rho costs $\approx \sqrt{n}$.
+What attack work does that give, and why is 256-bit elliptic-curve security comparable to 3072-bit RSA
+rather than 256-bit RSA?
+
+**E6 🔴 — Prove correctness.** Without looking at §3, show that ECDSA verification accepts an honest
+signature: start from $s = k^{-1}(e+rd)$ and derive $u_1G + u_2Q = kG$.
+
+<details><summary>Answer E6</summary>
+
+$k = s^{-1}(e+rd) = s^{-1}e + s^{-1}rd = u_1 + u_2 d$, so
+$u_1G + u_2Q = u_1G + u_2(dG) = (u_1 + u_2 d)G = kG = R$, hence the $x$-coordinate equals $r$. ∎
+</details>
