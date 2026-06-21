@@ -1,7 +1,8 @@
 # Personal Notary — The Complete Guide
 
 > One document to **understand** the concepts, **review** the design, **debug** it, **use** it, and **test yourself**.
-> Pairs with the top-level [README](../README.md). Diagrams render on GitHub and in VS Code (Markdown Preview Mermaid Support).
+> Pairs with the top-level [README](../README.md). For the **mathematics and primary sources** behind it,
+> see [MATH.md](MATH.md). Diagrams render on GitHub and in VS Code (Markdown Preview Mermaid Support).
 
 ## Contents
 1. [Is it cleanly structured?](#1-is-it-cleanly-structured)
