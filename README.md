@@ -1,5 +1,7 @@
 # Personal Notary
 
+[![CI](https://github.com/joseriveramorales/notary/actions/workflows/ci.yml/badge.svg)](https://github.com/joseriveramorales/notary/actions/workflows/ci.yml)
+
 A small **code-signing service** in C# / .NET. It signs and timestamps your own
 documents so you can later **prove** any one of them existed on a given date and has
 not been altered — verifiable by anyone, offline, without trusting the cloud that stores it.
